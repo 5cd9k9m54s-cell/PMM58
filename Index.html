@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estudio · tracker semanal</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f5;--card:#fff;--ink:#16233b;--mute:#5d6b82;--line:#d5dce6;--tick:#1d4ed8;--off:#e4e9f0;--ok:#15803d;--okbg:#e3f4ea}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1624;--card:#17213a;--ink:#e8edf6;--mute:#9aa8c0;--line:#2a3856;--tick:#5b8def;--off:#22304d;--ok:#4ade80;--okbg:#14301f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 Barlow,system-ui,sans-serif;padding:16px 14px 40px}
+main{max-width:560px;margin:0 auto}
+h1,h2,.num,.dn{font-family:"Barlow Semi Condensed",system-ui,sans-serif}
+h1{font-size:26px;margin:0}
+h2{font-size:19px;margin:0 0 10px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:14px}
+.mute{color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.nav b{font:700 18px "Barlow Semi Condensed",sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+.btn{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn:focus-visible,.t:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--tick);outline-offset:2px}
+.big{display:flex;align-items:baseline;gap:8px}
+.num{font-size:48px;font-weight:700;line-height:1}
+.bar{height:12px;background:var(--off);border-radius:8px;overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;background:var(--tick);border-radius:8px;transition:width .25s}
+.done .bar i{background:var(--ok)}
+.banner{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--okbg);color:var(--ok);font-weight:500}
+.done .banner{display:flex;gap:10px;align-items:center}
+.chk{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ok);color:var(--card);display:grid;place-items:center;font-weight:700}
+.pop .chk{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.3)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+.day{padding:10px 0;border-top:1px solid var(--line)}
+.day:first-of-type{border-top:0}
+.dh{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.dn{font-size:18px;font-weight:700}
+.dh em{margin-left:auto;font-style:normal;font-weight:500}
+.today .dn{color:var(--tick)}
+.future{opacity:.45}
+.ticks{display:flex;gap:4px}
+.t{flex:1;height:40px;border-radius:8px;border:0;background:var(--off);cursor:pointer;padding:0}
+.t:nth-child(2n){margin-right:6px}
+.t:nth-child(8){margin-right:0}
+.t.on{background:var(--tick)}
+.future .t{cursor:default}
+.row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+input[type=number],input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;width:84px}
+input[type=date]{width:auto}
+textarea{width:100%;min-height:70px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical}
+.stats{display:flex;gap:18px;margin-top:10px}
+.stats b{font:700 22px "Barlow Semi Condensed",sans-serif;display:block}
+.bk{display:flex;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;font-weight:500}
+.tab[aria-pressed=true]{background:var(--tick);color:var(--card);border-color:var(--tick)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4 b{font:700 28px "Barlow Semi Condensed",sans-serif;display:block;line-height:1.1}
+.cal{display:grid;grid-template-columns:repeat(7,1fr) 1.2fr;gap:4px}
+.ch{text-align:center;font-size:13px;color:var(--mute)}
+.cell{border:0;border-radius:8px;min-height:44px;background:var(--off);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;line-height:1.1;padding:2px;cursor:pointer}
+.cell small{font-size:11px;font-weight:500}
+.cell.out{opacity:.4}
+.cell.tdy{outline:2px solid var(--tick);outline-offset:1px}
+.l1{background:color-mix(in srgb,var(--tick) 22%,var(--card))}
+.l2{background:color-mix(in srgb,var(--tick) 45%,var(--card))}
+.l3{background:color-mix(in srgb,var(--tick) 70%,var(--card))}
+.l4{background:var(--tick);color:var(--card)}
+.wsum{background:transparent;cursor:default;font-weight:500;color:var(--mute)}
+.wsum.ok{color:var(--ok);font-size:20px;font-weight:700}
+.cn{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cn b{font:700 18px "Barlow Semi Condensed",sans-serif}
+.bars{display:flex;gap:4px;align-items:flex-end;height:130px}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--mute)}
+.bt{width:100%;height:90px;background:var(--off);border-radius:6px;display:flex;align-items:flex-end;overflow:hidden;margin:2px 0}
+.bt i{display:block;width:100%;background:var(--tick)}
+.bt.ok i{background:var(--ok)}
+.mrow{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)}
+.mrow:first-of-type{border-top:0}
+@media (prefers-reduced-motion:reduce){.pop .chk{animation:none}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><h1>Estudio</h1><div class="mute" id="streak"></div></div>
+    <div class="mute" id="exam" style="text-align:right"></div>
+  </div>
+  <div class="tabs">
+    <button class="btn tab" data-t="w" aria-pressed="true">Semana</button>
+    <button class="btn tab" data-t="d" aria-pressed="false">Panel</button>
+  </div>
+  <section id="weekView">
+  <div class="nav">
+    <button class="btn" id="prev" aria-label="Semana anterior">‹</button>
+    <div style="text-align:center"><b id="wk"></b><div class="mute" id="wkTag"></div></div>
+    <button class="btn" id="next" aria-label="Semana siguiente">›</button>
+  </div>
+  <div id="app"></div>
+  </section>
+  <section id="dashView" hidden>
+    <div class="card">
+      <h2>Cuenta atrás</h2>
+      <div class="row" style="margin-bottom:0"><label class="mute" for="examDate">Fecha del examen</label><input type="date" id="examDate"></div>
+      <div id="cd"></div>
+    </div>
+    <div id="dash"></div>
+  </section>
+  <div class="card">
+    <h2>Copia de seguridad</h2>
+    <div class="bk">
+      <button class="btn" id="exp">Exportar copia</button>
+      <button class="btn" id="imp">Importar copia</button>
+      <button class="btn" id="reset">Empezar de cero</button>
+      <input type="file" id="file" accept="application/json" hidden>
+    </div>
+    <p class="mute" style="margin:10px 0 0">Todo se guarda solo, al instante, en este navegador. Exporta una copia de vez en cuando.</p>
+    <p id="warn" hidden style="margin:10px 0 0;color:#b91c1c;font-weight:500">Este navegador no permite guardar datos (¿modo privado?). Lo que marques se perderá al cerrar.</p>
+  </div>
+</main>
+<script>
+const K='estudio-tracker-v1';
+let S={};
+try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
+S.days=S.days||{};S.months=S.months||{};S.exam=S.exam||'';
+const save=()=>{
+  let ok=true;
+  try{localStorage.setItem(K,JSON.stringify(S))}catch(e){ok=false}
+  const w=document.getElementById('warn');if(w)w.hidden=ok;
+};
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+addEventListener('pagehide',()=>save());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const mk=d=>ds(d).slice(0,7);
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const mondayOf=d=>addD(new Date(d.getFullYear(),d.getMonth(),d.getDate()),-((d.getDay()+6)%7));
+const DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const MN=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MSG=['Semana cumplida. Así se aprueba: sumando semanas como esta.','Objetivo conseguido. Cada semana que cumples te acerca a la plaza.','Hecho. La constancia pesa más que la motivación.','Otra semana en el bolsillo. Sigue así.','Cumpliste lo que te prometiste. Eso es disciplina.','Semana completa. Descansa un poco y a por la siguiente.'];
+const fmtH=t=>{const h=t/2;return(Number.isInteger(h)?String(h):h.toFixed(1)).replace('.',',')};
+function goalFor(key){
+  const m=S.months[key];if(m&&m.goal)return m.goal;
+  return key<='2026-11'?10:key==='2026-12'?12:14;
+}
+const ticksOf=d=>S.days[ds(d)]||0;
+const weekTicks=m=>{let t=0;for(let i=0;i<7;i++)t+=ticksOf(addD(m,i));return t};
+const isDone=m=>weekTicks(m)>=goalFor(mk(m))*2;
+function streak(){let m=mondayOf(new Date()),n=0;if(!isDone(m))m=addD(m,-7);while(isDone(m)&&n<300){n++;m=addD(m,-7)}return n}
+let cur=mondayOf(new Date()),justDone=false;
+
+function renderWeek(){
+  const today=new Date(),tk=ds(today),end=addD(cur,6);
+  const mkey=mk(cur),goal=goalFor(mkey),total=weekTicks(cur),done=total>=goal*2;
+  document.getElementById('wk').textContent=cur.getDate()+' '+MN[cur.getMonth()].slice(0,3)+' – '+end.getDate()+' '+MN[end.getMonth()].slice(0,3);
+  document.getElementById('wkTag').textContent=ds(cur)===ds(mondayOf(today))?'Esta semana':'';
+  const s=streak();
+  document.getElementById('streak').textContent=s?('Racha: '+s+(s===1?' semana cumplida':' semanas cumplidas')):'Cumple una semana para empezar la racha';
+  let days='';
+  for(let i=0;i<7;i++){
+    const d=addD(cur,i),k=ds(d),n=ticksOf(d),fut=k>tk;
+    let b='';for(let j=0;j<8;j++)b+='<button class="t'+(j<n?' on':'')+'" data-d="'+k+'" data-i="'+j+'" aria-label="Media hora '+(j+1)+', '+DN[i]+' '+d.getDate()+'"'+(fut?' disabled':'')+'></button>';
+    days+='<div class="day'+(k===tk?' today':'')+(fut?' future':'')+'"><div class="dh"><span class="dn">'+DN[i]+'</span><span class="mute">'+d.getDate()+' '+MN[d.getMonth()].slice(0,3)+'</span><em>'+fmtH(n)+' h</em></div><div class="ticks">'+b+'</div></div>';
+  }
+  const msg=MSG[Math.floor(cur.getTime()/6048e5)%MSG.length];
+  // month stats
+  let mt=0;for(const k in S.days)if(k.startsWith(mkey))mt+=S.days[k];
+  let wd=0,wn=0,m=mondayOf(new Date(cur.getFullYear(),cur.getMonth(),1));
+  if(m.getMonth()!==cur.getMonth())m=addD(m,7);
+  while(m.getMonth()===cur.getMonth()){wn++;if(isDone(m))wd++;m=addD(m,7)}
+  const obj=(S.months[mkey]&&S.months[mkey].obj)||'';
+  document.getElementById('app').innerHTML=
+   '<div class="card'+(done?' done':'')+(justDone?' pop':'')+'"><div class="big"><span class="num">'+fmtH(total)+'</span><span class="mute">de '+goal+' h esta semana</span></div>'+
+   '<div class="bar"><i style="width:'+Math.min(100,total/(goal*2)*100)+'%"></i></div>'+
+   '<div class="mute">'+(done?'Cupo semanal completo':'Faltan '+fmtH(goal*2-total)+' h')+' · cada casilla = 30 min</div>'+
+   '<div class="banner"><span class="chk">✓</span><span>'+msg+'</span></div></div>'+
+   '<div class="card">'+days+'</div>'+
+   '<div class="card"><h2>Objetivo de '+MN[cur.getMonth()]+'</h2>'+
+   '<div class="row"><label class="mute" for="goal">Horas por semana</label><input type="number" id="goal" min="1" max="40" value="'+goal+'"></div>'+
+   '<textarea id="obj" placeholder="Qué quieres lograr este mes (temas, simulacros, repasos…)">'+obj.replace(/</g,'&lt;')+'</textarea>'+
+   '<div class="stats"><div><b>'+fmtH(mt)+' h</b><span class="mute">este mes</span></div><div><b>'+wd+' / '+wn+'</b><span class="mute">semanas cumplidas</span></div></div></div>';
+  justDone=false;
+  const ex=document.getElementById('exam');
+  if(S.exam){const dd=Math.ceil((new Date(S.exam+'T00:00')-new Date(ds(today)+'T00:00'))/864e5);ex.textContent=dd>0?'Examen en '+dd+' días ('+Math.round(dd/7)+' semanas)':'';}else ex.textContent='';
+}
+document.getElementById('app').addEventListener('click',e=>{
+  const t=e.target.closest('.t');if(!t||t.disabled)return;
+  const k=t.dataset.d,i=+t.dataset.i,was=isDone(cur);
+  let n=i+1;if((S.days[k]||0)===n)n=i;
+  if(n)S.days[k]=n;else delete S.days[k];
+  justDone=!was&&isDone(cur);save();render();
+});
+document.getElementById('app').addEventListener('input',e=>{
+  const key=mk(cur);S.months[key]=S.months[key]||{};
+  if(e.target.id==='obj'){S.months[key].obj=e.target.value;save()}
+  if(e.target.id==='goal'){const v=Math.max(1,Math.min(40,+e.target.value||0));if(v){S.months[key].goal=v;save()}}
+});
+document.getElementById('app').addEventListener('change',e=>{if(e.target.id==='goal')render()});
+document.getElementById('prev').onclick=()=>{cur=addD(cur,-7);render()};
+document.getElementById('next').onclick=()=>{cur=addD(cur,7);render()};
+const ed=document.getElementById('examDate');ed.value=S.exam;
+ed.onchange=()=>{S.exam=ed.value;save();render()};
+document.getElementById('exp').onclick=()=>{
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));
+  a.download='estudio-'+ds(new Date())+'.json';a.click();
+};
+document.getElementById('reset').onclick=()=>{
+  if(!confirm('Se borrarán todas las horas, objetivos y la fecha del examen. ¿Empezar de cero?'))return;
+  S={days:{},months:{},exam:''};save();ed.value='';cur=mondayOf(new Date());dm=new Date(cur.getFullYear(),cur.getMonth(),1);render();
+};
+document.getElementById('imp').onclick=()=>document.getElementById('file').click();
+document.getElementById('file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.days)throw 0;S={days:d.days,months:d.months||{},exam:d.exam||''};save();ed.value=S.exam;render()}catch(x){alert('El archivo no es una copia válida.')}};
+  r.readAsText(f);
+};
+let dm=new Date(cur.getFullYear(),cur.getMonth(),1);
+function setTab(t){
+  document.getElementById('weekView').hidden=t!=='w';
+  document.getElementById('dashView').hidden=t!=='d';
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+const lv=n=>n===0?0:n<=2?1:n<=4?2:n<=6?3:4;
+function renderDash(){
+  const today=new Date(),td=new Date(ds(today)+'T00:00'),curM=mondayOf(today);
+  const keys=Object.keys(S.days).sort();
+  const first=mondayOf(keys.length?new Date(keys[0]+'T00:00'):today);
+  let tot=0;for(const k in S.days)tot+=S.days[k];
+  let wd=0,best=0,run=0,nw=0;
+  for(let m=first;m<=curM;m=addD(m,7)){nw++;if(isDone(m)){wd++;run++;best=Math.max(best,run)}else if(m<curM)run=0}
+  // cuenta atrás
+  let cd='<p class="mute" style="margin:10px 0 0">Pon la fecha del examen cuando la sepas y aquí arrancará la cuenta atrás.</p>';
+  if(S.exam){
+    const ex=new Date(S.exam+'T00:00'),dd=Math.round((ex-td)/864e5);
+    if(dd>0){
+      let plan=0;for(let m=curM;m<ex;m=addD(m,7))plan+=goalFor(mk(m));
+      plan=Math.max(0,plan-weekTicks(curM)/2);
+      const pct=Math.min(100,Math.max(0,(td-first)/(ex-first)*100));
+      cd='<div class="big" style="margin-top:10px"><span class="num">'+dd+'</span><span class="mute">días para el examen</span></div>'+
+        '<div class="bar"><i style="width:'+pct+'%"></i></div>'+
+        '<div class="mute">'+Math.floor(dd/7)+' semanas y '+dd%7+' días · '+Math.round(pct)+'% del camino recorrido</div>'+
+        '<div class="mute">Si cumples tus objetivos mensuales, te quedan unas '+Math.round(plan)+' h de estudio.</div>';
+    }else if(dd===0)cd='<p style="margin:10px 0 0;font-weight:500">Hoy es el examen. Mucha suerte, llegas preparado.</p>';
+    else cd='<p class="mute" style="margin:10px 0 0">La fecha del examen ya ha pasado. Actualízala si ha cambiado.</p>';
+  }
+  document.getElementById('cd').innerHTML=cd;
+  // calendario mensual
+  const y=dm.getFullYear(),mo=dm.getMonth(),last=new Date(y,mo+1,0);
+  let g='';['L','M','X','J','V','S','D','Sem'].forEach(x=>g+='<div class="ch">'+x+'</div>');
+  for(let m=mondayOf(new Date(y,mo,1));m<=last;m=addD(m,7)){
+    for(let i=0;i<7;i++){
+      const d=addD(m,i),n=ticksOf(d);
+      g+='<button class="cell l'+lv(n)+(d.getMonth()===mo?'':' out')+(ds(d)===ds(today)?' tdy':'')+'" data-go="'+ds(d)+'" aria-label="'+d.getDate()+' '+MN[d.getMonth()]+': '+fmtH(n)+' h">'+d.getDate()+(n?'<small>'+fmtH(n)+'</small>':'')+'</button>';
+    }
+    g+='<div class="cell wsum'+(isDone(m)?' ok':'')+'">'+(isDone(m)?'✓':fmtH(weekTicks(m)))+'</div>';
+  }
+  // últimas 12 semanas
+  let bars='';
+  for(let i=11;i>=0;i--){
+    const m=addD(curM,-7*i),t=weekTicks(m),gl=goalFor(mk(m))*2;
+    bars+='<div class="bc"><span>'+(t?fmtH(t):'')+'</span><div class="bt'+(t>=gl?' ok':'')+'"><i style="height:'+Math.min(100,t/gl*100)+'%"></i></div><span>'+m.getDate()+'/'+(m.getMonth()+1)+'</span></div>';
+  }
+  // horas por mes
+  const mt={};for(const k in S.days){const q=k.slice(0,7);mt[q]=(mt[q]||0)+S.days[k]}
+  const months=Object.keys(mt).sort().reverse().map(q=>'<div class="mrow"><span>'+MN[+q.slice(5)-1]+' '+q.slice(0,4)+'</span><b>'+fmtH(mt[q])+' h</b></div>').join('')||'<p class="mute" style="margin:0">Aún no hay horas registradas.</p>';
+  document.getElementById('dash').innerHTML=
+    '<div class="card"><div class="grid4">'+
+    '<div><b>'+fmtH(tot)+' h</b><span class="mute">estudiadas en total</span></div>'+
+    '<div><b>'+wd+' / '+nw+'</b><span class="mute">semanas cumplidas</span></div>'+
+    '<div><b>'+best+'</b><span class="mute">mejor racha (semanas)</span></div>'+
+    '<div><b>'+fmtH(Math.round(tot/nw))+' h</b><span class="mute">media por semana</span></div></div></div>'+
+    '<div class="card"><div class="cn"><button class="btn" data-act="pm" aria-label="Mes anterior">‹</button><b>'+MN[mo]+' '+y+'</b><button class="btn" data-act="nm" aria-label="Mes siguiente">›</button></div><div class="cal">'+g+'</div>'+
+    '<p class="mute" style="margin:10px 0 0">Toca un día para abrir su semana. La última columna son las horas de la semana, o ✓ si cumpliste.</p></div>'+
+    '<div class="card"><h2>Últimas 12 semanas</h2><div class="bars">'+bars+'</div></div>'+
+    '<div class="card"><h2>Horas por mes</h2>'+months+'</div>';
+}
+document.getElementById('dash').addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');
+  if(g){cur=mondayOf(new Date(g.dataset.go+'T00:00'));setTab('w');render();window.scrollTo(0,0);return}
+  const a=e.target.closest('[data-act]');
+  if(a){dm=new Date(dm.getFullYear(),dm.getMonth()+(a.dataset.act==='nm'?1:-1),1);renderDash()}
+});
+function render(){renderWeek();renderDash()}
+render();
+</script>
+</body>
+</html>
